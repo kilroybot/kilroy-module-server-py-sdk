@@ -132,14 +132,12 @@ class ModuleController(Controller, ABC):
         async for payload in self._handle_subscribe(self.watch_config):
             yield payload
 
-    # noinspection PyShadowingNames
     @Request("/config/set")
     async def _handle_set_config(self, data: Awaitable[JSON]) -> JSON:
         return await self._handle_request(
             self.set_config, data, ConfigSetRequest
         )
 
-    # noinspection PyShadowingNames
     @RequestStreamOut("/generate")
     async def _handle_generate(
         self, data: Awaitable[JSON]
@@ -149,21 +147,18 @@ class ModuleController(Controller, ABC):
         ):
             yield payload
 
-    # noinspection PyShadowingNames
     @RequestStreamIn("/fit/posts")
     async def _handle_fit_posts(self, data: AsyncIterable[JSON]) -> JSON:
         return await self._handle_request_stream_in(
             self.fit_posts, data, FitPostsRequest
         )
 
-    # noinspection PyShadowingNames
     @Request("/fit/scores")
     async def _handle_fit_scores(self, data: Awaitable[JSON]) -> JSON:
         return await self._handle_request(
             self.fit_scores, data, FitScoresRequest
         )
 
-    # noinspection PyShadowingNames
     @Request("/step")
     async def _handle_step(self, data: Awaitable[JSON]) -> JSON:
         return await self._handle_request(self.step, data, StepRequest)
@@ -204,35 +199,31 @@ class ModuleController(Controller, ABC):
     async def watch_config(self) -> AsyncIterable[ConfigNotification]:
         yield
 
-    # noinspection PyShadowingNames
     @abstractmethod
     async def set_config(
         self, request: Awaitable[ConfigSetRequest]
     ) -> ConfigSetReply:
         pass
 
-    # noinspection PyShadowingNames, PyUnusedLocal
+    # noinspection PyUnusedLocal
     @abstractmethod
     async def generate(
         self, request: Awaitable[GenerateRequest]
     ) -> AsyncIterable[GenerateReply]:
         yield
 
-    # noinspection PyShadowingNames
     @abstractmethod
     async def fit_posts(
         self, requests: AsyncIterable[FitPostsRequest]
     ) -> FitPostsReply:
         pass
 
-    # noinspection PyShadowingNames
     @abstractmethod
     async def fit_scores(
         self, request: Awaitable[FitScoresRequest]
     ) -> FitScoresReply:
         pass
 
-    # noinspection PyShadowingNames
     @abstractmethod
     async def step(self, request: Awaitable[StepRequest]) -> StepReply:
         pass
