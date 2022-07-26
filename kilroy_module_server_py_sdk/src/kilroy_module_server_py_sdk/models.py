@@ -64,6 +64,7 @@ class Config(BaseModuleModel):
 
 class ConfigSchema(BaseModuleModel):
     config_schema: JSONSchema
+    ui_schema: JSON
 
 
 class ConfigNotification(BaseModuleModel):
