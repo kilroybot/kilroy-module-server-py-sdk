@@ -1,8 +1,10 @@
+from abc import ABC
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, Dict, List, Literal, Union
 from uuid import UUID
 
+from humps import camelize
 from jsonschema.exceptions import SchemaError
 from jsonschema.validators import Draft202012Validator
 from kilroy_ws_server_py_sdk import JSON
@@ -29,8 +31,17 @@ class JSONSchema(dict):
         return schema
 
 
-class PostSchema(BaseModel):
-    postSchema: JSONSchema
+class BaseModuleModel(BaseModel, ABC):
+    def json(self, *args, by_alias: bool = True, **kwargs) -> str:
+        return super().json(*args, by_alias=by_alias, **kwargs)
+
+    class Config:
+        allow_population_by_field_name = True
+        alias_generator = camelize
+
+
+class PostSchema(BaseModuleModel):
+    post_schema: JSONSchema
 
 
 class StatusEnum(str, Enum):
@@ -38,74 +49,74 @@ class StatusEnum(str, Enum):
     ready = "ready"
 
 
-class Status(BaseModel):
+class Status(BaseModuleModel):
     status: StatusEnum
 
 
-class StatusNotification(BaseModel):
+class StatusNotification(BaseModuleModel):
     old: Status
     new: Status
 
 
-class Config(BaseModel):
+class Config(BaseModuleModel):
     config: JSON
 
 
-class ConfigSchema(BaseModel):
-    configSchema: JSONSchema
+class ConfigSchema(BaseModuleModel):
+    config_schema: JSONSchema
 
 
-class ConfigNotification(BaseModel):
+class ConfigNotification(BaseModuleModel):
     old: Config
     new: Config
 
 
-class ConfigSetRequest(BaseModel):
+class ConfigSetRequest(BaseModuleModel):
     set: Config
 
 
-class ConfigSetReply(BaseModel):
+class ConfigSetReply(BaseModuleModel):
     old: Config
     new: Config
 
 
-class GenerateRequest(BaseModel):
-    numberOfPosts: int
+class GenerateRequest(BaseModuleModel):
+    number_of_posts: int
 
 
-class GenerateReply(BaseModel):
-    postNumber: int
-    postId: UUID
+class GenerateReply(BaseModuleModel):
+    post_number: int
+    post_id: UUID
     post: JSON
 
 
-class FitPostsRequest(BaseModel):
-    postNumber: int
+class FitPostsRequest(BaseModuleModel):
+    post_number: int
     post: JSON
 
 
-class FitPostsReply(BaseModel):
+class FitPostsReply(BaseModuleModel):
     success: Literal[True] = True
 
 
-class PostScore(BaseModel):
-    postId: UUID
+class PostScore(BaseModuleModel):
+    post_id: UUID
     score: float
 
 
-class FitScoresRequest(BaseModel):
+class FitScoresRequest(BaseModuleModel):
     scores: List[PostScore]
 
 
-class FitScoresReply(BaseModel):
+class FitScoresReply(BaseModuleModel):
     success: Literal[True] = True
 
 
-class StepRequest(BaseModel):
+class StepRequest(BaseModuleModel):
     pass
 
 
-class StepReply(BaseModel):
+class StepReply(BaseModuleModel):
     success: Literal[True] = True
 
 
@@ -114,24 +125,24 @@ class MetricTypeEnum(str, Enum):
     timeseries = "timeseries"
 
 
-class BaseMetricInfo(BaseModel):
+class BaseMetricInfo(BaseModuleModel):
     label: str
 
 
 class BaseSeriesMetricInfo(BaseMetricInfo):
-    stepLabel: str
-    valueLabel: str
+    step_label: str
+    value_label: str
 
 
 class SeriesMetricInfo(BaseSeriesMetricInfo):
     type: Literal[MetricTypeEnum.series] = MetricTypeEnum.series
-    stepType: Literal["int", "float"]
-    valueType: Literal["int", "float"]
+    step_type: Literal["int", "float"]
+    value_type: Literal["int", "float"]
 
 
 class TimeseriesMetricInfo(BaseSeriesMetricInfo):
     type: Literal[MetricTypeEnum.timeseries] = MetricTypeEnum.timeseries
-    valueType: Literal["int", "float"]
+    value_type: Literal["int", "float"]
 
 
 MetricInfo = Annotated[
@@ -143,17 +154,17 @@ MetricInfo = Annotated[
 ]
 
 
-class MetricsInfo(BaseModel):
+class MetricsInfo(BaseModuleModel):
     metrics: Dict[str, MetricInfo]
 
 
-class SeriesMetricNotificationData(BaseModel):
+class SeriesMetricNotificationData(BaseModuleModel):
     type: Literal[MetricTypeEnum.series] = MetricTypeEnum.series
     step: float
     value: float
 
 
-class TimeseriesMetricNotificationData(BaseModel):
+class TimeseriesMetricNotificationData(BaseModuleModel):
     type: Literal[MetricTypeEnum.timeseries] = MetricTypeEnum.timeseries
     step: datetime = Field(default_factory=datetime.utcnow)
     value: float
@@ -168,6 +179,6 @@ MetricNotificationData = Annotated[
 ]
 
 
-class MetricsNotification(BaseModel):
+class MetricsNotification(BaseModuleModel):
     name: str
     data: MetricNotificationData
