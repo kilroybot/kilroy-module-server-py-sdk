@@ -1,10 +1,10 @@
+from kilroy_module_server_py_sdk.controller import ModuleController
 from kilroy_module_server_py_sdk.resources import (
     resource,
-    resource_text,
     resource_bytes,
+    resource_text,
 )
-
-from kilroy_module_server_py_sdk.models import (
+from kilroy_module_py_shared import (
     JSON,
     JSONSchema,
     PostSchema,
@@ -35,7 +35,4 @@ from kilroy_module_server_py_sdk.models import (
     MetricNotificationData,
     MetricsNotification,
 )
-
-from kilroy_module_server_py_sdk.controller import ModuleController
-
 from kilroy_ws_server_py_sdk import Server
