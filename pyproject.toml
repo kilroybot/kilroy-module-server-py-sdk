@@ -3,7 +3,7 @@
 
 [tool.poetry]
 name = "kilroy-module-server-py-sdk"
-version = "0.3.1"
+version = "0.4.0"
 description = "SDK for kilroy module servers in Python 🧰"
 readme = "kilroy_module_server_py_sdk/README.md"
 authors = ["kilroy <kilroymail@pm.me>"]
@@ -15,9 +15,8 @@ packages = [{ include = "kilroy-module-server-py-sdk", from = "kilroy_module_ser
 
 [tool.poetry.dependencies]
 python = "^3.9"
-kilroy-ws-server-py-sdk = "^0.4"
-pydantic = "^1.9"
-jsonschema = "^4.7"
+kilroy-ws-server-py-sdk = "~0.4"
+kilroy-module-py-shared = "~0.2"
 
 # dev
 

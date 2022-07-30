@@ -8,18 +8,7 @@ from typing import (
     TypeVar,
 )
 
-from kilroy_ws_server_py_sdk import (
-    Controller,
-    Get,
-    JSON,
-    Request,
-    RequestStreamIn,
-    RequestStreamOut,
-    Subscribe,
-)
-from pydantic import BaseModel
-
-from kilroy_module_server_py_sdk.models import (
+from kilroy_module_py_shared import (
     Config,
     ConfigNotification,
     ConfigSchema,
@@ -39,6 +28,16 @@ from kilroy_module_server_py_sdk.models import (
     StepReply,
     StepRequest,
 )
+from kilroy_ws_server_py_sdk import (
+    Controller,
+    Get,
+    JSON,
+    Request,
+    RequestStreamIn,
+    RequestStreamOut,
+    Subscribe,
+)
+from pydantic import BaseModel
 
 M = TypeVar("M", bound=BaseModel)
 N = TypeVar("N", bound=BaseModel)
