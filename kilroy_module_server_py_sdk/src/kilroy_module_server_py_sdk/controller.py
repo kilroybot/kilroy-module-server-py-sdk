@@ -8,6 +8,8 @@ from typing import (
     TypeVar,
 )
 
+from aiostream import stream
+from asyncstdlib import enumerate
 from kilroy_module_py_shared import (
     Config,
     ConfigNotification,
@@ -24,6 +26,7 @@ from kilroy_module_py_shared import (
     MetricsNotification,
     PostSchema,
     Status,
+    StatusEnum,
     StatusNotification,
     StepReply,
     StepRequest,
@@ -39,11 +42,13 @@ from kilroy_ws_server_py_sdk import (
 )
 from pydantic import BaseModel
 
+from kilroy_module_server_py_sdk.face import Face
+
 M = TypeVar("M", bound=BaseModel)
 N = TypeVar("N", bound=BaseModel)
 
 
-class ModuleController(Controller, ABC):
+class BaseController(Controller, ABC):
     @staticmethod
     async def _handle_get(fn: Callable[[], Awaitable[M]]) -> JSON:
         payload = await fn()
@@ -183,8 +188,8 @@ class ModuleController(Controller, ABC):
         pass
 
     @abstractmethod
-    async def watch_status(self) -> AsyncIterable[StatusNotification]:
-        yield
+    def watch_status(self) -> AsyncIterable[StatusNotification]:
+        pass
 
     @abstractmethod
     async def config(self) -> Config:
@@ -195,8 +200,8 @@ class ModuleController(Controller, ABC):
         pass
 
     @abstractmethod
-    async def watch_config(self) -> AsyncIterable[ConfigNotification]:
-        yield
+    def watch_config(self) -> AsyncIterable[ConfigNotification]:
+        pass
 
     @abstractmethod
     async def set_config(
@@ -204,12 +209,11 @@ class ModuleController(Controller, ABC):
     ) -> ConfigSetReply:
         pass
 
-    # noinspection PyUnusedLocal
     @abstractmethod
-    async def generate(
+    def generate(
         self, request: Awaitable[GenerateRequest]
     ) -> AsyncIterable[GenerateReply]:
-        yield
+        pass
 
     @abstractmethod
     async def fit_posts(
@@ -232,5 +236,95 @@ class ModuleController(Controller, ABC):
         pass
 
     @abstractmethod
+    def watch_metrics(self) -> AsyncIterable[MetricsNotification]:
+        pass
+
+
+class ModuleController(BaseController):
+    def __init__(self, face: Face) -> None:
+        super().__init__()
+        self._face = face
+
+    async def post_schema(self) -> PostSchema:
+        return PostSchema(post_schema=self._face.post_schema)
+
+    async def status(self) -> Status:
+        ready = self._face.loadable.ready
+        return Status(status=StatusEnum.ready if ready else StatusEnum.loading)
+
+    async def watch_status(self) -> AsyncIterable[StatusNotification]:
+        old = await self.status()
+        async for ready in self._face.loadable.watch():
+            new = Status(
+                status=StatusEnum.ready if ready else StatusEnum.loading
+            )
+            yield StatusNotification(old=old, new=new)
+            old = new
+
+    async def config(self) -> Config:
+        return Config(config=await self._face.config.get())
+
+    async def config_schema(self) -> ConfigSchema:
+        return ConfigSchema(
+            config_schema=await self._face.config.get_full_schema()
+        )
+
+    async def watch_config(self) -> AsyncIterable[ConfigNotification]:
+        old = await self.config()
+        async for config in self._face.config.watch():
+            new = Config(config=config)
+            yield ConfigNotification(old=old, new=new)
+            old = new
+
+    async def set_config(
+        self, request: Awaitable[ConfigSetRequest]
+    ) -> ConfigSetReply:
+        old = await self.config()
+        config = await self._face.config.set((await request).set.config)
+        new = Config(config=config)
+        return ConfigSetReply(old=old, new=new)
+
+    async def generate(
+        self, request: Awaitable[GenerateRequest]
+    ) -> AsyncIterable[GenerateReply]:
+        request = await request
+        async for number, (post_id, post) in enumerate(
+            self._face.generate(request.number_of_posts)
+        ):
+            yield GenerateReply(post_number=number, post_id=post_id, post=post)
+
+    async def fit_posts(
+        self, requests: AsyncIterable[FitPostsRequest]
+    ) -> FitPostsReply:
+        async for request in requests:
+            await self._face.fit_post(request.post)
+        return FitPostsReply(success=True)
+
+    async def fit_scores(
+        self, request: Awaitable[FitScoresRequest]
+    ) -> FitScoresReply:
+        request = await request
+        for score in request.scores:
+            await self._face.fit_score(score.post_id, score.score)
+        return FitScoresReply(success=True)
+
+    async def step(self, request: Awaitable[StepRequest]) -> StepReply:
+        await request
+        await self._face.step()
+        return StepReply(success=True)
+
+    async def metrics_info(self) -> MetricsInfo:
+        return MetricsInfo(
+            metrics={
+                metric.name(): metric.info() for metric in self._face.metrics
+            }
+        )
+
     async def watch_metrics(self) -> AsyncIterable[MetricsNotification]:
-        yield
+        combine = stream.merge(
+            *(metric.watch() for metric in self._face.metrics)
+        )
+
+        async with combine.stream() as streamer:
+            async for data in streamer:
+                yield data
