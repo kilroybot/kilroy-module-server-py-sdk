@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterable, Generic, Set, Tuple
+from typing import AsyncIterable, Generic, List, Set, Tuple, TypeVar
 from uuid import UUID
 
 from kilroy_module_py_shared import JSON, JSONSchema
+from kilroy_ws_server_py_sdk import Configurable
 
 from kilroy_module_server_py_sdk.metrics import Metric
-from kilroy_module_server_py_sdk.types import StateType
-from kilroy_module_server_py_sdk.utils import ConfigurableWithLoadableState
+
+StateType = TypeVar("StateType")
 
 
-class Face(ConfigurableWithLoadableState[StateType], Generic[StateType], ABC):
+class Module(Configurable[StateType], Generic[StateType], ABC):
     @property
     @abstractmethod
     def post_schema(self) -> JSONSchema:
@@ -25,11 +26,11 @@ class Face(ConfigurableWithLoadableState[StateType], Generic[StateType], ABC):
         pass
 
     @abstractmethod
-    async def fit_post(self, post: JSON) -> None:
+    async def fit_posts(self, posts: AsyncIterable[JSON]) -> None:
         pass
 
     @abstractmethod
-    async def fit_score(self, post_id: UUID, score: float) -> None:
+    async def fit_score(self, scores: List[Tuple[UUID, float]]) -> None:
         pass
 
     @abstractmethod

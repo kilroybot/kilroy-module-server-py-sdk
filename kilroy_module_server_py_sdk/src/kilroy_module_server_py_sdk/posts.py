@@ -1,29 +1,20 @@
 from abc import ABC
 from typing import Optional
 
-from humps import camelize
-from pydantic import BaseModel, root_validator
+from kilroy_ws_server_py_sdk import SerializableModel
+from pydantic import root_validator
 
 
-class BasePostModel(BaseModel, ABC):
-    def json(self, *args, by_alias: bool = True, **kwargs) -> str:
-        return super().json(*args, by_alias=by_alias, **kwargs)
-
-    class Config:
-        allow_population_by_field_name = True
-        alias_generator = camelize
-
-
-class TextData(BasePostModel):
+class TextData(SerializableModel):
     content: str
 
 
-class ImageData(BasePostModel):
+class ImageData(SerializableModel):
     raw: str
     filename: str
 
 
-class BasePost(BasePostModel, ABC):
+class BasePost(SerializableModel, ABC):
     pass
 
 
