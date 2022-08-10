@@ -49,6 +49,14 @@ optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "fifolock"
+version = "0.0.20"
+description = "A flexible low-level tool to make synchronisation primitives in asyncio Python"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "iniconfig"
 version = "1.1.1"
 description = "iniconfig: brain-dead simple config-ini parsing"
@@ -58,7 +66,7 @@ python-versions = "*"
 
 [[package]]
 name = "jsonschema"
-version = "4.9.0"
+version = "4.9.1"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -74,7 +82,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "kilroy-module-py-shared"
-version = "0.2.1"
+version = "0.3.0"
 description = "shared code for kilroy module SDKs in Python 🤝"
 category = "main"
 optional = false
@@ -108,13 +116,14 @@ test = ["pytest (>=7.0,<8.0)"]
 
 [[package]]
 name = "kilroy-ws-server-py-sdk"
-version = "0.4.3"
+version = "0.5.0"
 description = "SDK for WebSocket servers in Python 🧰"
 category = "main"
 optional = false
 python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
+fifolock = ">=0.0,<0.1"
 kilroy-ws-py-shared = ">=0.2,<0.3"
 yrouter = ">=1.1,<2.0"
 
@@ -259,7 +268,7 @@ test = ["pytest"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "79a0d86686f05736f9dbb0df9c44d7f90874a87a056af877c663afb59ad6849b"
+content-hash = "72ee69f28b34c9bd931d56fd38992ecc2f6f613683b0839410751e09fc9ddce0"
 
 [metadata.files]
 aiostream = [
@@ -280,25 +289,29 @@ colorama = [
     {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
     {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
 ]
+fifolock = [
+    {file = "fifolock-0.0.20-py3-none-any.whl", hash = "sha256:48ce70e50ceecd799e0346b6a92bb1d0301fd6b9ebeb3a2b3383e0ca7c3e73f5"},
+    {file = "fifolock-0.0.20.tar.gz", hash = "sha256:c38ac427605d87936a6131524aa2a1ef2964f12892e76c1749b136b9e53a88f9"},
+]
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.9.0-py3-none-any.whl", hash = "sha256:5d0be0cd1b670438b71c3d3145b2abba1f9d197e3e91adc4c4bae4c0e114e252"},
-    {file = "jsonschema-4.9.0.tar.gz", hash = "sha256:df10e65c8f3687a48e93d0d348ce0ce5f897b5a28e9bbcbbe8f7c7eaf019e850"},
+    {file = "jsonschema-4.9.1-py3-none-any.whl", hash = "sha256:8ebad55894c002585271af2d327d99339ef566fb085d9129b69e2623867c4106"},
+    {file = "jsonschema-4.9.1.tar.gz", hash = "sha256:408c4c8ed0dede3b268f7a441784f74206380b04f93eb2d537c7befb3df3099f"},
 ]
 kilroy-module-py-shared = [
-    {file = "kilroy-module-py-shared-0.2.1.tar.gz", hash = "sha256:7f940b5580e8ef3bd8046f71c0b6af3e36e0567bfd57b7f768eb7d16d695e7a3"},
-    {file = "kilroy_module_py_shared-0.2.1-py3-none-any.whl", hash = "sha256:91c76d6f350e87267d5dd21aa9ee738891d5a65ea66530fa45bff831596fbd41"},
+    {file = "kilroy-module-py-shared-0.3.0.tar.gz", hash = "sha256:a1e3dac6a5c4892502371240d648c250a2125f169f139772855c7fb0a7599093"},
+    {file = "kilroy_module_py_shared-0.3.0-py3-none-any.whl", hash = "sha256:2af32e53ebb90c2cd483c65dd7612c5c99e13ef9f0ba4b70259040373a25704c"},
 ]
 kilroy-ws-py-shared = [
     {file = "kilroy-ws-py-shared-0.2.0.tar.gz", hash = "sha256:7517f4beb3586761a839d375943811128c4014544141e647a7df87607f095627"},
     {file = "kilroy_ws_py_shared-0.2.0-py3-none-any.whl", hash = "sha256:2cf2a8592a8a3b6a5fcb1c9b669fea1e3dec8d1f949ea460371f578d2c0e6dd8"},
 ]
 kilroy-ws-server-py-sdk = [
-    {file = "kilroy-ws-server-py-sdk-0.4.3.tar.gz", hash = "sha256:0706abae18ba7fc4e60a572b47dc36069fec756d7c1ca4cc2c94d894883f0f39"},
-    {file = "kilroy_ws_server_py_sdk-0.4.3-py3-none-any.whl", hash = "sha256:e214d9bc920e18a4c50513e5dfdc7b4d7db7ad5fb252fa68c2d6057fd256b117"},
+    {file = "kilroy-ws-server-py-sdk-0.5.0.tar.gz", hash = "sha256:86abf63013a150c8e57eb271619110097f8b24eb5c725390dab06b5321a19828"},
+    {file = "kilroy_ws_server_py_sdk-0.5.0-py3-none-any.whl", hash = "sha256:e606b6664443994b8d5e2db91239c33f58d771c79f68a6abf02987f4897d8e47"},
 ]
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
