@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kilroy-module-server-py-sdk"
-version = "0.6.0"
+version = "0.7.0"
 description = "SDK for kilroy module servers in Python 🧰"
 readme = "README.md"
 authors = ["kilroy <kilroymail@pm.me>"]
@@ -11,15 +11,15 @@ documentation = "https://kilroybot.github.io/kilroy-module-server-py-sdk"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-kilroy-ws-server-py-sdk = "~0.5"
-kilroy-module-py-shared = "~0.3"
-asyncstdlib = "^3.10"
+asyncstdlib = "^3.9"
 aiostream = "^0.4"
+kilroy-server-py-utils = "~0.1"
+kilroy-module-py-shared = "~0.4"
 
 # dev
 
 # test
-pytest = { version = "^7.0", optional = true }
+pytest = { version = "^7", optional = true }
 
 [tool.poetry.extras]
 # need to do it that way until poetry supports dependency groups: https://github.com/python-poetry/poetry/issues/1644

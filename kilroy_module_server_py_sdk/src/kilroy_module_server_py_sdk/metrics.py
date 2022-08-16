@@ -1,22 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterable, Generic, TypeVar
+from typing import Any, AsyncIterable, Dict, Generic, Tuple, TypeVar
 
-from kilroy_module_py_shared import (
-    SeriesMetricInfo,
-    SeriesMetricNotificationData,
-    TimeseriesMetricInfo,
-    TimeseriesMetricNotificationData,
+from kilroy_server_py_utils import (
+    Categorizable,
+    Observable,
+    classproperty,
 )
-from kilroy_ws_server_py_sdk import Categorizable, Observable, classproperty
 
-MetricInfoType = TypeVar("MetricInfoType")
-MetricNotificationType = TypeVar("MetricNotificationType")
+DataType = TypeVar("DataType")
 
 
-class Metric(
-    Categorizable, Generic[MetricInfoType, MetricNotificationType], ABC
-):
-    _observable: Observable[MetricNotificationType]
+class Metric(Categorizable, Generic[DataType], ABC):
+    _observable: Observable[Tuple[int, DataType]]
 
     def __init__(self) -> None:
         super().__init__()
@@ -33,24 +28,17 @@ class Metric(
 
     @classproperty
     @abstractmethod
-    def info(cls) -> MetricInfoType:
+    def label(cls) -> str:
         pass
 
-    async def report(self, data: MetricNotificationType) -> None:
-        await self._observable.set(data)
+    @classproperty
+    @abstractmethod
+    def config(cls) -> Dict[str, Any]:
+        pass
 
-    async def watch(self) -> AsyncIterable[MetricNotificationType]:
-        async for data in self._observable.subscribe():
+    async def report(self, data: DataType, dataset: int = 0) -> None:
+        await self._observable.set((dataset, data))
+
+    async def watch(self) -> AsyncIterable[Tuple[int, DataType]]:
+        async for dataset_id, data in self._observable.subscribe():
             yield data
-
-
-class SeriesMetric(
-    Metric[SeriesMetricInfo, SeriesMetricNotificationData], ABC
-):
-    pass
-
-
-class TimeseriesMetric(
-    Metric[TimeseriesMetricInfo, TimeseriesMetricNotificationData], ABC
-):
-    pass
