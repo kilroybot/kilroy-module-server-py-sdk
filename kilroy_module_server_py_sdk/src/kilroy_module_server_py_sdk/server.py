@@ -1,9 +1,29 @@
-from kilroy_ws_server_py_sdk import Server
+import logging
 
-from kilroy_module_server_py_sdk.controller import ModuleController
-from kilroy_module_server_py_sdk.module import Module
+from grpclib.events import RecvRequest
+from grpclib.server import Server
+
+from kilroy_module_server_py_sdk import Module
+from kilroy_module_server_py_sdk.service import ModuleService
 
 
-class ModuleServer(Server):
-    def __init__(self, module: Module, *args, **kwargs) -> None:
-        super().__init__(ModuleController(module), *args, **kwargs)
+class ModuleServer:
+    def __init__(
+        self,
+        module: Module,
+        logger: logging.Logger = logging.getLogger(__name__),
+    ) -> None:
+        self._service = ModuleService(module)
+        self._logger = logger
+
+    async def _on_request(self, event: RecvRequest) -> None:
+        self._logger.debug(f'Handling "{event.method_name}"...')
+
+    async def run(self, *args, **kwargs) -> None:
+        server = Server([self._service])
+        await server.start(*args, **kwargs)
+        self._logger.info("Server started.")
+        try:
+            await server.wait_closed()
+        finally:
+            self._logger.info("Server stopped.")

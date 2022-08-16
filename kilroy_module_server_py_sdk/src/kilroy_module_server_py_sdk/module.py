@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterable, Generic, List, Set, Tuple, TypeVar
+from typing import Any, AsyncIterable, Dict, Generic, List, Set, Tuple, TypeVar
 from uuid import UUID
 
-from kilroy_module_py_shared import JSON, JSONSchema
-from kilroy_ws_server_py_sdk import Configurable
+from kilroy_module_py_shared import Metadata
+from kilroy_server_py_utils import Configurable, classproperty
+from kilroy_server_py_utils.schema import JSONSchema
 
 from kilroy_module_server_py_sdk.metrics import Metric
 
@@ -11,26 +12,31 @@ StateType = TypeVar("StateType")
 
 
 class Module(Configurable[StateType], Generic[StateType], ABC):
-    @property
+    @classproperty
     @abstractmethod
-    def post_schema(self) -> JSONSchema:
+    def metadata(cls) -> Metadata:
         pass
 
-    @property
+    @classproperty
     @abstractmethod
-    def metrics(self) -> Set[Metric]:
+    def post_schema(cls) -> JSONSchema:
         pass
 
+    @classproperty
     @abstractmethod
-    def generate(self, n: int) -> AsyncIterable[Tuple[UUID, JSON]]:
-        pass
-
-    @abstractmethod
-    async def fit_posts(self, posts: AsyncIterable[JSON]) -> None:
+    def metrics(cls) -> Set[Metric]:
         pass
 
     @abstractmethod
-    async def fit_score(self, scores: List[Tuple[UUID, float]]) -> None:
+    def generate(self, n: int) -> AsyncIterable[Tuple[UUID, Dict[str, Any]]]:
+        pass
+
+    @abstractmethod
+    async def fit_posts(self, posts: AsyncIterable[Dict[str, Any]]) -> None:
+        pass
+
+    @abstractmethod
+    async def fit_scores(self, scores: List[Tuple[UUID, float]]) -> None:
         pass
 
     @abstractmethod
