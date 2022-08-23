@@ -449,9 +449,9 @@ class ModuleService(ModuleServiceBase):
                     "config": json.dumps(metric.config),
                 }
             )
-            for metric in self._module.metrics
+            for metric in await self._module.get_metrics()
         ]
-        return GetMetricsConfigResponse().from_dict({"configs": configs})
+        return GetMetricsConfigResponse(configs=configs)
 
     async def watch_metrics(
         self, watch_metrics_request: "WatchMetricsRequest"
@@ -469,7 +469,7 @@ class ModuleService(ModuleServiceBase):
                 )
 
         combine = aiostream.stream.merge(
-            *(converted(metric) for metric in self._module.metrics)
+            *(converted(metric) for metric in await self._module.get_metrics())
         )
 
         async with combine.stream() as streamer:

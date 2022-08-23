@@ -22,9 +22,8 @@ class Module(Configurable[StateType], Generic[StateType], ABC):
     def post_schema(cls) -> JSONSchema:
         pass
 
-    @classproperty
     @abstractmethod
-    def metrics(cls) -> Set[Metric]:
+    async def get_metrics(self) -> Set[Metric]:
         pass
 
     @abstractmethod
