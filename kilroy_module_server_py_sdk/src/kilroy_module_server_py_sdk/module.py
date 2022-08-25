@@ -27,7 +27,9 @@ class Module(Configurable[StateType], Generic[StateType], ABC):
         pass
 
     @abstractmethod
-    def generate(self, n: int) -> AsyncIterable[Tuple[UUID, Dict[str, Any]]]:
+    def generate(
+        self, n: int, dry: bool
+    ) -> AsyncIterable[Tuple[UUID, Dict[str, Any]]]:
         pass
 
     @abstractmethod

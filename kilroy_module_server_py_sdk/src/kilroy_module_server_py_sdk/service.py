@@ -406,7 +406,7 @@ class ModuleService(ModuleServiceBase):
         self, generate_request: "GenerateRequest"
     ) -> AsyncIterator["GenerateResponse"]:
         async for post_id, post in self._module.generate(
-            generate_request.quantity
+            generate_request.quantity, generate_request.dry
         ):
             post = GeneratedPost().from_dict(
                 {"id": str(post_id), "content": json.dumps(post)}
