@@ -418,7 +418,7 @@ class ModuleService(ModuleServiceBase):
     ) -> "FitPostsResponse":
         async def posts():
             async for request in fit_posts_request_iterator:
-                yield json.loads(request.post.content)
+                yield json.loads(request.post.content), request.post.score
 
         await self._module.fit_posts(posts())
         return FitPostsResponse()

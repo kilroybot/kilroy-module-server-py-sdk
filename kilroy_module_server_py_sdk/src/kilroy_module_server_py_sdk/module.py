@@ -33,7 +33,9 @@ class Module(Configurable[StateType], Generic[StateType], ABC):
         pass
 
     @abstractmethod
-    async def fit_posts(self, posts: AsyncIterable[Dict[str, Any]]) -> None:
+    async def fit_posts(
+        self, posts: AsyncIterable[Tuple[Dict[str, Any], float]]
+    ) -> None:
         pass
 
     @abstractmethod
