@@ -11,7 +11,7 @@ from kilroy_module_server_py_sdk.metrics import Metric
 StateType = TypeVar("StateType")
 
 
-class Module(Configurable[StateType], Generic[StateType], ABC):
+class Module(Configurable[StateType], ABC, Generic[StateType]):
     @classproperty
     @abstractmethod
     def metadata(cls) -> Metadata:
