@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kilroy-module-server-py-sdk"
-version = "0.8.2"
+version = "0.9.0"
 description = "SDK for kilroy module servers in Python 🧰"
 readme = "README.md"
 authors = ["kilroy <kilroymail@pm.me>"]
