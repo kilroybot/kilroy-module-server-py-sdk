@@ -34,6 +34,11 @@ class Metric(Categorizable, Generic[DataType], ABC):
 
     @classproperty
     @abstractmethod
+    def group(cls) -> str:
+        return "metrics"
+
+    @classproperty
+    @abstractmethod
     def config(cls) -> Dict[str, Any]:
         pass
 
