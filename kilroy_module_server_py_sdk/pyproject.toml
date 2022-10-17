@@ -14,7 +14,7 @@ python = "^3.9"
 asyncstdlib = "^3.9"
 aiostream = "^0.4"
 kilroy-server-py-utils = "~0.3"
-kilroy-module-py-shared = "~0.5"
+kilroy-module-py-shared = "~0.6"
 
 # dev
 
