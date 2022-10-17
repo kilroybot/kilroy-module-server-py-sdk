@@ -464,6 +464,7 @@ class ModuleService(ModuleServiceBase):
                 {
                     "id": metric.name,
                     "label": metric.label,
+                    "group": metric.group,
                     "config": json.dumps(metric.config),
                 }
             )
