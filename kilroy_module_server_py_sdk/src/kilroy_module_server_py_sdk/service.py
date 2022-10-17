@@ -28,6 +28,8 @@ from kilroy_module_py_shared import (
     GetStatusRequest,
     GetStatusResponse,
     MetricConfig,
+    ResetRequest,
+    ResetResponse,
     SetConfigRequest,
     SetConfigResponse,
     Status,
@@ -125,6 +127,9 @@ class ModuleServiceBase(ServiceBase):
     async def watch_metrics(
         self, watch_metrics_request: "WatchMetricsRequest"
     ) -> AsyncIterator["WatchMetricsResponse"]:
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
+    async def reset(self, reset_request: "ResetRequest") -> "ResetResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_get_metadata(
@@ -250,6 +255,13 @@ class ModuleServiceBase(ServiceBase):
             request,
         )
 
+    async def __rpc_reset(
+        self, stream: "grpclib.server.Stream[ResetRequest, ResetResponse]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.reset(request)
+        await stream.send_message(response)
+
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
             "/kilroy.module.v1alpha.ModuleService/GetMetadata": grpclib.const.Handler(
@@ -335,6 +347,12 @@ class ModuleServiceBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_STREAM,
                 WatchMetricsRequest,
                 WatchMetricsResponse,
+            ),
+            "/kilroy.module.v1alpha.ModuleService/Reset": grpclib.const.Handler(
+                self.__rpc_reset,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                ResetRequest,
+                ResetResponse,
             ),
         }
 
@@ -475,3 +493,10 @@ class ModuleService(ModuleServiceBase):
         async with combine.stream() as streamer:
             async for message in streamer:
                 yield message
+
+    async def reset(self, reset_request: "ResetRequest") -> "ResetResponse":
+        metrics = await self._module.get_metrics()
+        for metric in metrics:
+            await metric.cleanup()
+        await self._module.init()
+        return ResetResponse()
