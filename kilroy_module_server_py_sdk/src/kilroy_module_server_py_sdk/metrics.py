@@ -45,6 +45,9 @@ class Metric(Categorizable, Generic[DataType], ABC):
     async def report(self, data: DataType, dataset: int = 0) -> None:
         await self._observable.set((dataset, data))
 
+    async def cleanup(self) -> None:
+        await self._observable.cleanup()
+
     async def watch(self) -> AsyncIterable[Tuple[int, DataType]]:
         async for dataset_id, data in self._observable.subscribe():
             yield dataset_id, data
