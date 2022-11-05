@@ -14,9 +14,9 @@ SDK for kilroy module servers in Python 🧰
 
 This `README` provides info about the development process.
 
-For more info about the package itself
-see `kilroy_module_server_py_sdk/README.md`
-or [docs](https://kilroybot.github.io/kilroy-module-server-py-sdk).
+For more info about the package itself see
+[package `README`](kilroy_module_server_py_sdk/README.md) or
+[docs](https://kilroybot.github.io/kilroy-module-server-py-sdk).
 
 ## Quickstart (on Ubuntu)
 
