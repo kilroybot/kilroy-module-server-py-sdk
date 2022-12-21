@@ -10,13 +10,15 @@ All methods are either simple coroutines or async generators.
 Here is an example:
 
 ```python
-from kilroy_module_server_py_sdk import Module, ModuleServer
+from pathlib import Path
+from kilroy_module_server_py_sdk import Module, ModuleService, ModuleServer
 
 class MyModule(Module):
-    ...  # Implement all necessary methods here
+    ... # Implement all necessary methods here
 
 module = await MyModule.build()
-server = ModuleServer(module)
+service = ModuleService(module, Path("path/to/state/directory"))
+server = ModuleServer(service)
 
 await server.run(host="0.0.0.0", port=11000)
 ```
