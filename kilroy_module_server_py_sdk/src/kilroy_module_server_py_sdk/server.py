@@ -3,17 +3,16 @@ import logging
 from grpclib.events import RecvRequest
 from grpclib.server import Server
 
-from kilroy_module_server_py_sdk import Module
 from kilroy_module_server_py_sdk.service import ModuleService
 
 
 class ModuleServer:
     def __init__(
         self,
-        module: Module,
+        service: ModuleService,
         logger: logging.Logger = logging.getLogger(__name__),
     ) -> None:
-        self._service = ModuleService(module)
+        self._service = service
         self._logger = logger
 
     async def _on_request(self, event: RecvRequest) -> None:

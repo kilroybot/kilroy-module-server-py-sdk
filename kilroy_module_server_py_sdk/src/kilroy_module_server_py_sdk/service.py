@@ -1,20 +1,15 @@
 import json
-from abc import abstractmethod
-from typing import AsyncIterator, Dict
-from uuid import UUID
+from pathlib import Path
+from typing import AsyncIterator, Dict, AsyncIterable, Tuple, Any
 
 import aiostream
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
 from grpclib import server
+
 from kilroy_module_py_shared import (
-    FitPostsRequest,
-    FitPostsResponse,
-    FitScoresRequest,
-    FitScoresResponse,
     GenerateRequest,
     GenerateResponse,
-    GeneratedPost,
     GetConfigRequest,
     GetConfigResponse,
     GetConfigSchemaRequest,
@@ -33,97 +28,85 @@ from kilroy_module_py_shared import (
     SetConfigRequest,
     SetConfigResponse,
     Status,
-    StepRequest,
-    StepResponse,
     WatchConfigRequest,
     WatchConfigResponse,
     WatchMetricsRequest,
     WatchMetricsResponse,
     WatchStatusRequest,
     WatchStatusResponse,
+    SaveRequest,
+    SaveResponse,
+    FitSupervisedRequest,
+    FitSupervisedResponse,
+    FitReinforcedRequest,
+    FitReinforcedResponse,
 )
-
 from kilroy_module_server_py_sdk import Metric, Module
 
 
 class ModuleServiceBase(ServiceBase):
-    @abstractmethod
     async def get_metadata(
         self, get_metadata_request: "GetMetadataRequest"
     ) -> "GetMetadataResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def get_post_schema(
         self, get_post_schema_request: "GetPostSchemaRequest"
     ) -> "GetPostSchemaResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def get_status(
         self, get_status_request: "GetStatusRequest"
     ) -> "GetStatusResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def watch_status(
         self, watch_status_request: "WatchStatusRequest"
     ) -> AsyncIterator["WatchStatusResponse"]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def get_config_schema(
         self, get_config_schema_request: "GetConfigSchemaRequest"
     ) -> "GetConfigSchemaResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def get_config(
         self, get_config_request: "GetConfigRequest"
     ) -> "GetConfigResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def watch_config(
         self, watch_config_request: "WatchConfigRequest"
     ) -> AsyncIterator["WatchConfigResponse"]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def set_config(
         self, set_config_request: "SetConfigRequest"
     ) -> "SetConfigResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def generate(
         self, generate_request: "GenerateRequest"
     ) -> AsyncIterator["GenerateResponse"]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
-    async def fit_posts(
-        self, fit_posts_request_iterator: AsyncIterator["FitPostsRequest"]
-    ) -> "FitPostsResponse":
+    async def fit_supervised(
+        self,
+        fit_supervised_request_iterator: AsyncIterator["FitSupervisedRequest"],
+    ) -> "FitSupervisedResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
-    async def fit_scores(
-        self, fit_scores_request: "FitScoresRequest"
-    ) -> "FitScoresResponse":
+    async def fit_reinforced(
+        self,
+        fit_reinforced_request_iterator: AsyncIterator["FitReinforcedRequest"],
+    ) -> "FitReinforcedResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
-    async def step(self, step_request: "StepRequest") -> "StepResponse":
-        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
-
-    @abstractmethod
     async def get_metrics_config(
         self, get_metrics_config_request: "GetMetricsConfigRequest"
     ) -> "GetMetricsConfigResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    @abstractmethod
     async def watch_metrics(
         self, watch_metrics_request: "WatchMetricsRequest"
     ) -> AsyncIterator["WatchMetricsResponse"]:
@@ -132,9 +115,12 @@ class ModuleServiceBase(ServiceBase):
     async def reset(self, reset_request: "ResetRequest") -> "ResetResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def save(self, save_request: "SaveRequest") -> "SaveResponse":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def __rpc_get_metadata(
         self,
-        stream: "server.Stream[GetMetadataRequest, GetMetadataResponse]",
+        stream: "grpclib.server.Stream[GetMetadataRequest, GetMetadataResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_metadata(request)
@@ -142,7 +128,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_get_post_schema(
         self,
-        stream: "server.Stream[GetPostSchemaRequest, GetPostSchemaResponse]",
+        stream: "grpclib.server.Stream[GetPostSchemaRequest, GetPostSchemaResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_post_schema(request)
@@ -150,7 +136,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_get_status(
         self,
-        stream: "server.Stream[GetStatusRequest, GetStatusResponse]",
+        stream: "grpclib.server.Stream[GetStatusRequest, GetStatusResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_status(request)
@@ -158,7 +144,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_watch_status(
         self,
-        stream: "server.Stream[WatchStatusRequest, WatchStatusResponse]",
+        stream: "grpclib.server.Stream[WatchStatusRequest, WatchStatusResponse]",
     ) -> None:
         request = await stream.recv_message()
         await self._call_rpc_handler_server_stream(
@@ -169,7 +155,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_get_config_schema(
         self,
-        stream: "server.Stream[GetConfigSchemaRequest, GetConfigSchemaResponse]",
+        stream: "grpclib.server.Stream[GetConfigSchemaRequest, GetConfigSchemaResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_config_schema(request)
@@ -177,7 +163,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_get_config(
         self,
-        stream: "server.Stream[GetConfigRequest, GetConfigResponse]",
+        stream: "grpclib.server.Stream[GetConfigRequest, GetConfigResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_config(request)
@@ -185,7 +171,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_watch_config(
         self,
-        stream: "server.Stream[WatchConfigRequest, WatchConfigResponse]",
+        stream: "grpclib.server.Stream[WatchConfigRequest, WatchConfigResponse]",
     ) -> None:
         request = await stream.recv_message()
         await self._call_rpc_handler_server_stream(
@@ -196,7 +182,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_set_config(
         self,
-        stream: "server.Stream[SetConfigRequest, SetConfigResponse]",
+        stream: "grpclib.server.Stream[SetConfigRequest, SetConfigResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.set_config(request)
@@ -204,7 +190,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_generate(
         self,
-        stream: "server.Stream[GenerateRequest, GenerateResponse]",
+        stream: "grpclib.server.Stream[GenerateRequest, GenerateResponse]",
     ) -> None:
         request = await stream.recv_message()
         await self._call_rpc_handler_server_stream(
@@ -213,32 +199,25 @@ class ModuleServiceBase(ServiceBase):
             request,
         )
 
-    async def __rpc_fit_posts(
+    async def __rpc_fit_supervised(
         self,
-        stream: "server.Stream[FitPostsRequest, FitPostsResponse]",
+        stream: "grpclib.server.Stream[FitSupervisedRequest, FitSupervisedResponse]",
     ) -> None:
         request = stream.__aiter__()
-        response = await self.fit_posts(request)
+        response = await self.fit_supervised(request)
         await stream.send_message(response)
 
-    async def __rpc_fit_scores(
+    async def __rpc_fit_reinforced(
         self,
-        stream: "server.Stream[FitScoresRequest, FitScoresResponse]",
+        stream: "grpclib.server.Stream[FitReinforcedRequest, FitReinforcedResponse]",
     ) -> None:
-        request = await stream.recv_message()
-        response = await self.fit_scores(request)
-        await stream.send_message(response)
-
-    async def __rpc_step(
-        self, stream: "server.Stream[StepRequest, StepResponse]"
-    ) -> None:
-        request = await stream.recv_message()
-        response = await self.step(request)
+        request = stream.__aiter__()
+        response = await self.fit_reinforced(request)
         await stream.send_message(response)
 
     async def __rpc_get_metrics_config(
         self,
-        stream: "server.Stream[GetMetricsConfigRequest, GetMetricsConfigResponse]",
+        stream: "grpclib.server.Stream[GetMetricsConfigRequest, GetMetricsConfigResponse]",
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_metrics_config(request)
@@ -246,7 +225,7 @@ class ModuleServiceBase(ServiceBase):
 
     async def __rpc_watch_metrics(
         self,
-        stream: "server.Stream[WatchMetricsRequest, WatchMetricsResponse]",
+        stream: "grpclib.server.Stream[WatchMetricsRequest, WatchMetricsResponse]",
     ) -> None:
         request = await stream.recv_message()
         await self._call_rpc_handler_server_stream(
@@ -260,6 +239,13 @@ class ModuleServiceBase(ServiceBase):
     ) -> None:
         request = await stream.recv_message()
         response = await self.reset(request)
+        await stream.send_message(response)
+
+    async def __rpc_save(
+        self, stream: "grpclib.server.Stream[SaveRequest, SaveResponse]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.save(request)
         await stream.send_message(response)
 
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
@@ -318,23 +304,17 @@ class ModuleServiceBase(ServiceBase):
                 GenerateRequest,
                 GenerateResponse,
             ),
-            "/kilroy.module.v1alpha.ModuleService/FitPosts": grpclib.const.Handler(
-                self.__rpc_fit_posts,
+            "/kilroy.module.v1alpha.ModuleService/FitSupervised": grpclib.const.Handler(
+                self.__rpc_fit_supervised,
                 grpclib.const.Cardinality.STREAM_UNARY,
-                FitPostsRequest,
-                FitPostsResponse,
+                FitSupervisedRequest,
+                FitSupervisedResponse,
             ),
-            "/kilroy.module.v1alpha.ModuleService/FitScores": grpclib.const.Handler(
-                self.__rpc_fit_scores,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                FitScoresRequest,
-                FitScoresResponse,
-            ),
-            "/kilroy.module.v1alpha.ModuleService/Step": grpclib.const.Handler(
-                self.__rpc_step,
-                grpclib.const.Cardinality.UNARY_UNARY,
-                StepRequest,
-                StepResponse,
+            "/kilroy.module.v1alpha.ModuleService/FitReinforced": grpclib.const.Handler(
+                self.__rpc_fit_reinforced,
+                grpclib.const.Cardinality.STREAM_UNARY,
+                FitReinforcedRequest,
+                FitReinforcedResponse,
             ),
             "/kilroy.module.v1alpha.ModuleService/GetMetricsConfig": grpclib.const.Handler(
                 self.__rpc_get_metrics_config,
@@ -354,13 +334,20 @@ class ModuleServiceBase(ServiceBase):
                 ResetRequest,
                 ResetResponse,
             ),
+            "/kilroy.module.v1alpha.ModuleService/Save": grpclib.const.Handler(
+                self.__rpc_save,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                SaveRequest,
+                SaveResponse,
+            ),
         }
 
 
 class ModuleService(ModuleServiceBase):
-    def __init__(self, module: Module) -> None:
+    def __init__(self, module: Module, state_directory: Path) -> None:
         super().__init__()
         self._module = module
+        self._state_directory = state_directory
 
     async def get_metadata(
         self, get_metadata_request: "GetMetadataRequest"
@@ -423,38 +410,46 @@ class ModuleService(ModuleServiceBase):
     async def generate(
         self, generate_request: "GenerateRequest"
     ) -> AsyncIterator["GenerateResponse"]:
-        async for post_id, post in self._module.generate(
-            generate_request.quantity, generate_request.dry
+        async for content, metadata in self._module.generate(
+            generate_request.quantity
         ):
-            post = GeneratedPost().from_dict(
-                {"id": str(post_id), "content": json.dumps(post)}
+            yield GenerateResponse(
+                content=json.dumps(content), metadata=json.dumps(metadata)
             )
-            yield GenerateResponse(post=post)
 
-    async def fit_posts(
-        self, fit_posts_request_iterator: AsyncIterator["FitPostsRequest"]
-    ) -> "FitPostsResponse":
-        async def posts():
-            async for request in fit_posts_request_iterator:
-                yield json.loads(request.post.content), request.post.score
+    async def fit_supervised(
+        self,
+        fit_supervised_request_iterator: AsyncIterator["FitSupervisedRequest"],
+    ) -> "FitSupervisedResponse":
+        async def __to_data(
+            it: AsyncIterator["FitSupervisedRequest"],
+        ) -> AsyncIterable[Tuple[Dict[str, Any], float]]:
+            async for request in it:
+                yield json.loads(request.content), request.score
 
-        await self._module.fit_posts(posts())
-        return FitPostsResponse()
+        await self._module.fit_supervised(
+            __to_data(fit_supervised_request_iterator)
+        )
+        return FitSupervisedResponse()
 
-    async def fit_scores(
-        self, fit_scores_request: "FitScoresRequest"
-    ) -> "FitScoresResponse":
-        scores = [
-            (UUID(score.id), score.score)
-            for score in fit_scores_request.scores
-        ]
+    async def fit_reinforced(
+        self,
+        fit_reinforced_request_iterator: AsyncIterator["FitReinforcedRequest"],
+    ) -> "FitReinforcedResponse":
+        async def __to_data(
+            it: AsyncIterator["FitReinforcedRequest"],
+        ) -> AsyncIterable[Tuple[Dict[str, Any], Dict[str, Any], float]]:
+            async for request in it:
+                yield (
+                    json.loads(request.content),
+                    json.loads(request.metadata),
+                    request.score,
+                )
 
-        await self._module.fit_scores(scores)
-        return FitScoresResponse()
-
-    async def step(self, step_request: "StepRequest") -> "StepResponse":
-        await self._module.step()
-        return StepResponse()
+        await self._module.fit_reinforced(
+            __to_data(fit_reinforced_request_iterator)
+        )
+        return FitReinforcedResponse()
 
     async def get_metrics_config(
         self, get_metrics_config_request: "GetMetricsConfigRequest"
@@ -464,8 +459,8 @@ class ModuleService(ModuleServiceBase):
                 {
                     "id": metric.name,
                     "label": metric.label,
-                    "group": metric.group,
                     "config": json.dumps(metric.config),
+                    "tags": metric.tags,
                 }
             )
             for metric in await self._module.get_metrics()
@@ -496,8 +491,9 @@ class ModuleService(ModuleServiceBase):
                 yield message
 
     async def reset(self, reset_request: "ResetRequest") -> "ResetResponse":
-        metrics = await self._module.get_metrics()
-        for metric in metrics:
-            await metric.cleanup()
-        await self._module.init()
+        await self._module.reset_self()
         return ResetResponse()
+
+    async def save(self, save_request: "SaveRequest") -> "SaveResponse":
+        await self._module.save_self(self._state_directory)
+        return SaveResponse()
