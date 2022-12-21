@@ -1,5 +1,9 @@
 from kilroy_module_server_py_sdk.module import Module
-from kilroy_module_server_py_sdk.metrics import Metric
+from kilroy_module_server_py_sdk.metrics import (
+    Metric,
+    StandardMetric,
+    Metrizable,
+)
 from kilroy_module_server_py_sdk.service import (
     ModuleServiceBase,
     ModuleService,
